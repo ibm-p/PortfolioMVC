@@ -5,7 +5,10 @@
             swal
             .confirm("Emin misiniz?")
             .then(function(r){
-                $scope.iletisimSil(item);
+                if(r)
+                {
+                    $scope.iletisimSil(item);
+                }
             })
         }
         $scope.iletisimSil = function(item)
