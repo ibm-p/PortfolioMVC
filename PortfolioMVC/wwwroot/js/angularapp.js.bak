@@ -1,0 +1,120 @@
+﻿//if(!app) app = angular.module('myApp', ['ngSanitize', 'ngTable', 'smart-table', 'angular.filter', 'ngMaterial', 'ngAnimate']);
+//if(!window.app) window.app = angular.module('MyApp', ['ngSanitize', 'ngTable', 'daterangepicker', 'angular.filter', 'ngAnimate'])
+	
+if(window.angApp){
+	window.angApp = {
+		controller: function() {},
+		factory: function(){},
+		module: function() {},
+		config: function() {},
+		directive: function() {},
+		filter: function() {}
+	}
+}
+
+
+if(!window.angApp) window.angApp = angular.module('MyApp', ['ngSanitize', 'ngTable', 'daterangepicker', 'angular.filter', 'ngAnimate', 'ui.bootstrap', 'ngMaterial', 'ngMessages', 'ui.grid'])
+
+
+
+
+if(!$.fn.scope)
+	$.fn.extend({
+		scope: function() {
+			return angular.element(this).scope();
+		}
+	});
+	
+
+angApp.factory('httpInterceptor', function () {
+  return {};
+  /*return {
+	'response': function(response) {
+
+        return response;
+      },
+  };*/
+});
+
+angApp.config(['$httpProvider',function($httpProvider) {
+  $httpProvider.interceptors.push('httpInterceptor');
+}]);
+angApp.config(['$provide', '$controllerProvider',function($provide, $controllerProvider) {
+	window["$controllerProvider"] = $controllerProvider;
+	$provide.value('$controllerProvider', $controllerProvider);
+}]);
+
+function applyAngularExtends()
+{
+	angApp.directiveMulti = function(arr, obj)
+	{
+		arr.forEach(function(e) {
+			angApp.directive(e, obj);
+		});
+	}
+	let $rootScope = angular.injector(["ng"]).get("$rootScope")
+	let $http = angular.injector(["ng"]).get("$http");
+	let httpProto = $http.constructor.prototype;	
+	httpProto.legacy = function(obj) {
+		let successCb;
+		let errorCb;
+		let returnObject = {
+			success: function(cb) {
+				successCb = cb;
+			},
+			error: function(cb) {
+				errorCb = cb;
+			}
+		}
+		
+		this(obj).then(function sc(result){
+			successCb.apply(this, [result.data]);
+		}, function er(result){
+			errorCb.apply(this, [result.data]);
+		});
+		return returnObject;
+	}
+	
+$.fn.extend({
+		angCompile: function(controller)
+		{
+			AngularUtils.CompileElement(this, controller);
+			return this;
+		}
+	});	
+	
+	
+}
+applyAngularExtends();
+
+var AngularUtils = {
+	GetScope: function(name)
+	{
+		return $(".ng-scope[ng-controller='" + name + "']").scope();
+	},
+	CompileElement: function(element, callback){
+
+		let $scope = angular.element(element).scope() || AngularUtils.GetScope("Main");
+		let $compile = $scope.$compile || angular.injector(["ng"]).get("$compile")
+		let controllerAttr = $(element).attr("ng-controller")
+		let provider = window.$controllerProvider;
+		let isTemp = false;
+		if(!controllerAttr && callback)
+		{
+			let tempName = "tcnt_" + Math.floor(Math.random() * (10000000 - 0 + 1) + 0);
+			$(element).attr("ng-controller", tempName)
+			controllerAttr = tempName;
+			isTemp = true;
+		}
+
+		if(controllerAttr && provider)
+		{
+			if(!provider.has(controllerAttr) && !$scope[controllerAttr])
+			{
+				$scope[controllerAttr] = callback ? callback : function(){}
+			}
+		}
+		$compile($(element))($scope);
+		$scope.$$digest();
+	}
+}

@@ -1,0 +1,93 @@
+﻿@using System.Text.RegularExpressions
+@model Personal
+
+@{
+    string rawPhone = Model.Phone ?? "";
+    string formattedPhone = Regex.Replace(rawPhone, @"(\d{3})(\d{3})(\d{2})(\d{2})", "(0$1) $2 $3 $4");
+}
+<section id="contact" class="contact section" style="margin-top: 82px">
+
+    <div class="container aos-init aos-animate" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="row gy-4">
+
+            <div class="col-md-6">
+                <div class="info-item d-flex align-items-center aos-init aos-animate" data-aos="fade-up" data-aos-delay="200">
+                    <i class="icon bi bi-geo-alt flex-shrink-0"></i>
+                    <div>
+                        <h3>Adres</h3>
+                        <p>@Model.Address</p>
+                    </div>
+                </div>
+            </div><!-- End Info Item -->
+
+            <div class="col-md-6">
+                <div class="info-item d-flex align-items-center aos-init aos-animate" data-aos="fade-up" data-aos-delay="300">
+                    <i class="icon bi bi-telephone flex-shrink-0"></i>
+                    <div>
+                        <h3>Telefon</h3>
+                        <p>@formattedPhone</p>
+                    </div>
+                </div>
+            </div><!-- End Info Item -->
+
+            <div class="col-md-6">
+                <div class="info-item d-flex align-items-center aos-init aos-animate" data-aos="fade-up" data-aos-delay="400">
+                    <i class="icon bi bi-envelope flex-shrink-0"></i>
+                    <div>
+                        <h3>E-Posta</h3>
+                        <p>@Model.Email</p>
+                    </div>
+                </div>
+            </div><!-- End Info Item -->
+
+            <div class="col-md-6">
+                <div class="info-item d-flex align-items-center aos-init aos-animate" data-aos="fade-up" data-aos-delay="500">
+                    <i class="icon bi bi-share flex-shrink-0"></i>
+                    <div>
+                        <h3>Social Profiles</h3>
+                        <div class="social-links">
+                            <a href="@Model.LinkX"><i class="bi bi-twitter-x"></i></a>
+                            <a href="@Model.LinkFaceBook"><i class="bi bi-facebook"></i></a>
+                            <a href="@Model.LinkInstagram"><i class="bi bi-instagram"></i></a>
+                            <a href="@Model.LinkLinkedIn"><i class="bi bi-linkedin"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- End Info Item -->
+
+        </div>
+
+        <form asp-action="ContactForm" method="post" class="php-email-form aos-init aos-animate" data-aos="fade-up" data-aos-delay="600">
+            <div class="row gy-4">
+
+                <div class="col-md-6">
+                    <input type="text" name="Name" class="form-control" placeholder="Adınız" required="">
+                </div>
+
+                <div class="col-md-6 ">
+                    <input type="email" class="form-control" name="Email" placeholder="E-Posta Adresiniz" required="">
+                </div>
+
+                <div class="col-md-12">
+                    <input type="text" class="form-control" name="Subject" placeholder="Konu" required="">
+                </div>
+
+                <div class="col-md-12">
+                    <textarea class="form-control" name="Message" rows="6" placeholder="İçerik" required=""></textarea>
+                </div>
+
+                <div class="col-md-12 text-center">
+                    <div class="loading">Loading</div>
+                    <div class="error-message"></div>
+                    <div class="sent-message">Mesajınız iletildi</div>
+
+                    <button type="submit">Mesaj Gönder</button>
+                </div>
+
+            </div>
+        </form><!-- End Contact Form -->
+
+    </div>
+
+</section>

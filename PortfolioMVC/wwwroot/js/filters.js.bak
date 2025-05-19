@@ -1,0 +1,138 @@
+﻿	 angApp.config(['$httpProvider', function($httpProvider) {
+	  $httpProvider.interceptors.push(function($q) {
+		return {
+		 'request': function(config) {
+			 let orig =  config.transformRequest;
+			 config.transformRequest = function(obj)
+			 {
+				 if(obj && is_object(obj))
+				 {
+					for(let o in obj)
+					{
+						let objv = obj[o]
+						if(objv instanceof Date)
+						{
+							obj[o] = new Date(convertLocalDateToUtcDateV2(objv))
+						}
+					}			
+				 }
+		
+				let res = orig[0](obj);
+
+				return res;
+			 }
+			 return config;
+		  }
+		};
+	  });
+	}])	
+	
+	
+	 angApp.config(['$provide', function($provide) {
+	  $provide.decorator('dateFilter', ['$delegate', function($delegate) {
+		var srcFilter = $delegate;
+		var extendsFilter = function(input, v) 
+		{
+			let dt = arguments[0];
+			let presets = {
+				"callCenter": "dd.MM.yyyy<br>HH:mm"
+			}
+			if(dt && dt.toDate)
+			{
+				arguments[0] = arguments[0].toDate();
+			}
+			if(v && presets[v])
+				arguments[1] = presets[v];
+			let res = srcFilter.apply(this, arguments);
+			return arguments[2] ? res + arguments[2] : res;
+		}
+
+		return extendsFilter;
+	  }])
+	}])
+	
+	angApp.filter('numbermarket', function($filter) {
+		let numberFilter = $filter('number');
+		return function(input, v) {
+			if(v == 'USDT')
+				v = 0;
+			else if(v == 'BTC')
+				v = undefined;
+			return numberFilter(input, v);
+		};
+	});
+
+	angApp.filter('date2', function($filter) {
+		let angularDateFilter = $filter('date');
+		let presets = {
+			"default": "dd.MM.yyyy HH:mm:ss",
+			"detection": "dd MMM yyyy HH:mm",
+			"ai": "dd MMM HH:mm"
+		}
+		let defaultV = presets.default;
+		return function(input, v) {
+			let p = presets[v];
+			if(!p)
+				p = defaultV;
+			return angularDateFilter(input, p);
+		};
+	});
+	angApp.filter('unsafe', function ($sce) { return $sce.trustAsHtml; });
+	angApp.filter("sanitize", ['$sce', '$sanitize', function ($sce, $sanitize) {
+        return function (htmlCode) {
+            return $sce.trustAsJs(htmlCode);
+        }
+    }])
+	angApp.filter('exchgUrl', function () {
+		let curExchg;
+        return function (val) {
+			if(!curExchg || curExchg.Name != val)
+				curExchg = ExchgUtils.GetExchg(val) 
+            return curExchg.UrlName;
+        }
+    });
+	angApp.filter('number2', function() {
+		return function(input, amount) {
+			if(!amount)
+				amount = 8;
+			else if(amount == -1)
+				amount = undefined
+			if(!input)
+			{
+				 return "";
+			}
+		  return toFixed2(input, amount);
+		};
+	});
+	angApp.filter('symbol', function() {
+		return function(input, itemType) {
+			if(!input)
+			{
+				return input;
+			}
+			if(itemType == 'Asset' || itemType == 'Short' || itemType == 'ShortName')
+			{
+				return SymbolUtils.AssetName(input);
+			}
+			else if(itemType == 'Market')
+			{
+				return SymbolUtils.MarketName(input);
+			}
+			return input;
+		};
+	});
+	angApp.filter('abs', function () {
+        return function (val) {
+            return Math.abs(val);
+        }
+    });
+	angApp.filter('filterPeriod', function() {
+		return function(input, itemType) {
+			return ExchgUtils.FilterPeriod(input, itemType);
+		};
+	});
+	angApp.filter('humanizeDuration', function() {
+		return function(input, itemType) {
+			return humanizeDuration(input, {language: "shortEn", delimiter: ' ', maxDecimalPoints: 0, spacer: '', largest: 2}); ;
+		};
+	});

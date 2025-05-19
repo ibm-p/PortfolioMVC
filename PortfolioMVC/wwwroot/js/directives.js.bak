@@ -1,0 +1,458 @@
+﻿	angApp.directive('convertToNumber', function() {
+	  return {
+		require: 'ngModel',
+		link: function(scope, element, attrs, ngModel) {
+		  ngModel.$parsers.push(function(val) {
+			return val != null ? parseInt(val, 10) : null;
+		  });
+		  ngModel.$formatters.push(function(val) {
+			return val != null ? '' + val : null;
+		  });
+		}
+	  };
+	});
+	
+	angApp.directive('type', function () {
+            return {
+                restrict: 'A',
+                link: function (scope, element, attributes) {
+					if(attributes.type == "submit")
+					{
+						$(element).on("click", function() {
+							$(element).closest("form").submit()
+						})
+					}
+                   // scope.$watch(attributes.type, function (value) {
+                       
+                    //});
+                }
+            };
+        })
+	angApp.directive('ngVisible', function () {
+            return {
+                restrict: 'A',
+                link: function (scope, element, attributes) {
+                    scope.$watch(attributes.ngVisible, function (value) {
+                        element.css('visibility', value ? 'visible' : 'hidden');
+                    });
+                }
+            };
+        })
+	angApp.directive('ngBindHtmlUnsafe', function ($compile) {
+            return {
+                restrict: 'A',
+                link: function (scope, element, attributes) {
+                    scope.$watch(attributes.ngBindHtmlUnsafe, function (value) {
+						$(element).html(value)
+						if($(element).is("[compile]"))
+						{
+							$compile($(element).contents())(scope);
+						}
+
+                    });
+                }
+            };
+        })
+	angApp.directive('headerTitle', function () {
+            return {
+                restrict: 'A',
+                link: function (scope, element, attributes) {
+					let el = element.closest('table').find('th').eq(element.index());
+                    if(el && !el.data("_htApplied"))
+					{
+						el.data("_htApplied", "1");
+						el.attr("title", attributes.headerTitle);
+
+					}
+                }
+            };
+	})
+	angApp.directive('ngEnter', function () {
+		return function (scope, element, attrs) {
+			if(attrs.ngEnter)
+			{
+				element.bind("keydown keypress", function (event) {
+					if (event.which === 13) {
+						scope.$apply(function () {
+							scope.$eval(attrs.ngEnter);
+						});
+						event.preventDefault();
+					}
+				});
+			}
+
+		};
+	})
+	angApp.directive('spinner', function ($compile) {
+            return {
+                restrict: 'A',
+                link: function (scope, element, attributes) {
+					if($(element).hasAttr("spinner"))
+					{
+						attributes["spinner"] = "true";
+					}
+					
+                    scope.$watch(attributes.spinner, function (value) {
+						let spinElement = $(element).tagName() == "I" ? element : $("<i />").appendTo(element);
+						spinElement.addClass("fa fa-spinner fa-spin ml-1");
+						$compile(spinElement)(scope);
+                    });
+                }
+            };
+        })		
+		angApp.directive('hoverPopup', function ($compile) {
+			return {
+				restrict: 'A',
+				link: function (scope, element, attributes) {	
+					//Daha önceden ayarlama yapıldısya ataması tekrar yapılmayacak.
+					if($(element).data("hoverPopupSet"))
+						return;
+					//exchg, symbol ve period bunları daima izlemeye alıyoruz değiştikleri anda ilgili chartı tekrar yüklüyoruz.
+					$(element).data("hoverPopupSet", true);
+					let hoverId = scope.$eval(attributes.hoverPopup);
+					let hoverProps = {
+						ElementId: hoverId,
+						Allowed: function()
+						{
+							if(attributes.hoverPopupAllowed === undefined)
+								return true;
+							let r = scope.$eval(attributes.hoverPopupAllowed);
+							return r;
+						},
+						OnShown: function(el)
+						{
+							if(attributes.hoverPopupOnshown)
+							{
+								scope.$eval(attributes.hoverPopupOnshown);
+							}
+						}
+					};
+					scope.$watchGroup([attributes.hoverPopup, attributes.hoverPopupMinWidth], function(newValues, oldValues, scope) {
+						hoverProps.ElementId = newValues[0];
+						hoverProps.MinWidth = newValues[1];
+					});
+					HoverPopupUtils.Apply(element, hoverProps);
+				}
+			};
+			}
+		)
+		
+		angApp.directive('select', function ($compile, $timeout) {
+            return {
+                restrict: 'E',
+                link: function (scope, element, attributes) {
+					let extObj;
+					let sel2Opt = {};
+					if($(element).hasAttr("select2"))
+					{
+						attributes["select2"] = "true";
+					}
+					if(attributes.select2)
+					{
+						if(!extObj) extObj = {};
+						if(!extObj.style)
+						{
+							extObj.style= "min-width: 200px";
+						}
+					}
+
+					if(extObj)
+					{
+						attributes.Include(extObj);
+					}
+					let tResult = Select2Utils.ResolveTemplate(scope, attributes.templateResult);
+					let tSelection =  Select2Utils.ResolveTemplate(scope, attributes.templateSelection);
+					let stateFunc = function(state, isResult = false)
+					{
+						let titem = isResult ? tResult : tSelection;
+						state._IsResult = isResult;
+						if(is_callable(titem))
+						{
+							return titem(state, {attributes: attributes, scope: scope});
+						}
+						else if(is_string(titem))
+						{
+							
+						}
+						return state.text;
+					}
+					if(attributes.select2)
+					{
+						let ajaxDataParam;
+						if(attributes.ajax)
+						{
+							ajaxDataParam = {
+								url: '/Grup/GrupAra',
+								data: function (params) {
+								  var query = {
+									term: params.term
+								  }
+								  return query;
+								},
+								processResults: function(data) {
+									return {
+										results: data.map(d => ({id: d.id, text: d.bilgi}))
+									}
+								}
+							}
+						}
+						let parentModal = $(element).closest(".modal-dialog");
+
+						let isMultiple = $(element).hasAttr("multiple");
+						let theme = !isMultiple ? "bootstrap" : undefined;
+						let item = $(element).select2(
+							{
+								 language: "tr",
+								 templateResult: tResult ? function(state) { return stateFunc(state, true); } : undefined,
+								 templateSelection: tSelection ? function(state) { return stateFunc(state, false); } : undefined,
+								 theme: theme,
+								 dropdownAutoWidth: true,
+								 placeholder: attributes.placeholder,
+								 dropdownParent: parentModal.length > 0 ? parentModal : undefined,
+								 ajax: ajaxDataParam,
+								 containerCssClass: ':all:',
+								 ...sel2Opt
+							 }
+						 );
+						
+						let lastTrigger;
+						scope.$watch(attributes.ngModel, function(value)
+						{
+							if(!attributes.ngModel)
+							{
+								return;
+							}
+							//Arka arkaya çağrı döngünlerini engellemek amacıyla 100ms altındaki istekler de change event' i tetiklenmeyecek.
+							if(lastTrigger && (Date.now() - lastTrigger) < 100)
+							{
+								return;
+							}
+							lastTrigger = Date.now();
+							$timeout(function() {
+								item.val(value).trigger('change');
+							}, 50);
+							
+						});
+
+						 item.on("select2:select", function (e) {
+							 scope.$apply(function(){
+								 let v = e && e.currentTarget && $(e.currentTarget).val();
+								 if(attributes.ngSelect2Select)
+								 {
+									 scope.$eval(attributes.ngSelect2Select, {$event: e, $value: v});
+								 }
+								 if(attributes.ngModel)
+									scope.$eval(attributes.ngModel + ' = _temp_;', {_temp_: v})
+							 });
+														 
+							 
+						 });
+					     let dropElement = $(item).data("select2").$dropdown;
+						 let commonStyle = $(item).attr("common-style");
+						 let commonClass = $(item).attr("common-class");
+						 let containerStyle = $(item).attr("container-style");
+						 let dropdownStyle = $(item).attr("dropdown-style");
+						 let containerClass = $(item).attr("container-class");
+
+						 let selectionStyle = $(item).attr("selection-style");
+						 let selectionClass = $(item).attr("selection-class");
+						 $(".select2-dropdown", dropElement).appendStyle(commonStyle);
+						 $(dropElement).appendStyle(dropdownStyle);
+						 $(".select2-selection", $(item).parent()).appendStyle(commonStyle);
+						 $(".select2-selection", $(item).parent()).appendStyle(selectionStyle);
+						 
+
+						 
+						 if(commonClass)
+						 {
+							$(".select2-dropdown", dropElement).addClass(commonClass);
+							$(".select2-selection", $(item).parent()).addClass(commonClass);
+						 }
+						 if(selectionClass)
+						 {
+							$(".select2-selection", $(item).parent()).appendStyle(selectionClass);
+						 }
+						 
+						 						
+						 $(".select2-container", $(item).parent()).appendStyle(attributes.style);					
+						 $(".select2-container", $(item).parent()).appendStyle(containerStyle);					
+						 $(".select2-container", $(item).parent()).addClass(attributes.class);
+						 $(".select2-container", $(item).parent()).addClass(containerClass);
+						 if(!isMultiple)
+						 {
+								$(".select2-selection", $(item).parent()).css({"display": "flex", 
+									"align-items": "center"});	 
+						 }
+
+					}
+					
+
+					
+					scope.$watch(attributes.ngFrom, function(value){
+						if(!value)
+						{
+							return;
+						}
+						let idName = attributes.idName ? attributes.idName : "id";
+						let textName = attributes.textName ? attributes.textName : "text";
+						let ngFilter = scope.$eval(attributes.ngFilter);
+
+						element.empty();
+						if(attributes.showEmpty)
+						{
+							let opt = $('<option />').
+							attr("value", "").
+							appendTo(element);
+							$compile(opt)(scope);
+						}
+						if(attributes.showAll)
+						{
+							let opt = $('<option>').
+							attr("value", "All").
+							html("All").
+							appendTo(element);
+							$compile(opt)(scope);
+						}
+						// if(attributes.showListedinfutures)
+						// {
+							// let opt = $('<option>').
+							// attr("value", "Listed In Futures").
+							// html("Listed In Futures").
+							// appendTo(element);
+							// $compile(opt)(scope);
+						// }
+						
+						let filterSec = 0;
+						let checkEq = 0;
+						let checkSec = 0;
+						let itemType = attributes.filterPeriod;
+						if(is_string(itemType))
+						{
+								if(itemType.startsWith(">="))
+								{
+									checkEq = 2;
+									itemType = itemType.replace(">=", "");
+									checkSec = ExchgUtils.PeriodToSeconds(itemType);
+								}
+								else if(itemType.startsWith(">"))
+								{
+									checkEq = 1;
+									itemType = itemType.replace(">", "");
+									checkSec = ExchgUtils.PeriodToSeconds(itemType);
+								}
+						}
+						
+						for(let i = 0; i < value.length; i++)
+						{
+							let item = value[i];
+							let state = {};
+							if(is_string(item))
+							{
+								state.id = item;
+								state.text = item;
+							}
+							else if(is_object(item))
+							{
+								state.id =  item[idName];
+								state.text =  item[textName];
+							}
+							if(ngFilter)
+							{
+								if(is_string(ngFilter))
+								{
+									if(ngFilter != state.id)
+									{
+										continue;
+									}
+								}
+								else if(is_array(ngFilter))
+								{
+									if(!ngFilter.Contains(state.id))
+										continue;
+								}
+							}
+							if(checkEq != 0)
+							{
+								let curSec = ExchgUtils.PeriodToSeconds(state.id);
+								if((checkEq == 1 && curSec > checkSec) || (checkEq == 2 && curSec >= checkSec))
+								{
+									//out.push(cur);
+								}
+								else{
+									continue;
+								}
+							}
+							let opt = $("<option />").
+							attr("value", state.id).
+							html(state.text).
+							appendTo(element);
+							$compile(opt)(scope);
+						}
+					});
+                }
+            };
+        })
+		
+
+angApp.directive('templateTarget', function ($compile) {
+	return {
+		restrict: 'A',
+		scope: true,
+		link: function (scope, element, attributes) {
+			let track = [];
+			let trackNames = [];
+			for (attribute in attributes) {
+				if (attribute != "param" && attribute.startsWith("param")) {
+					track.push(attributes[attribute]);
+					trackNames.push(attribute.replace(/^param/, ""));
+				}
+			}
+
+
+
+			scope.$watch(function () {
+				trackNames.forEach(function (item) {
+					let v = scope.$parent.$eval(attributes["param" + item]);
+					scope[item.toLowerCase()] = v;
+				})
+				let $tempData = scope.$parent.$eval(attributes.templateData);
+				scope.Extend($tempData);
+				if (!scope.$$phase) {
+					scope.$digest();
+				}
+
+			}, function (value) {
+
+			})
+
+
+			scope.$watch(attributes.templateTarget, function (value) {
+				let target = scope.$eval(attributes.templateTarget);
+				if (target) {
+					$(element).empty();
+					let item = $(`[template-item='${target}']`);
+					item.each(function (item) {
+						let cloneElem = $(this.childNodes).clone();
+						let $injector = angular.element(this).injector();
+						let $tempData = scope.$eval(attributes.templateData);
+						trackNames.forEach(function (item) {
+							scope[item.toLowerCase()] = scope.$eval(attributes["param" + item]);
+						})
+						scope.Extend($tempData);
+						clearElementData(cloneElem);
+						$injector.invoke(function ($rootScope, $compile) {
+							$compile(cloneElem)(scope);
+						});
+						$(element).append(cloneElem);
+					});
+					//scope.$apply();
+
+				}
+			});
+
+
+
+
+		}
+	};
+})		

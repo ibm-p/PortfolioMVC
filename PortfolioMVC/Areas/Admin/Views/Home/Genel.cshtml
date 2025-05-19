@@ -1,0 +1,129 @@
+﻿<script>
+    angApp.controller('Genel', function ($element, $scope, $compile, $http, $window, $sce, $timeout, $templateCache, NgTableParams, $rootScope, $q) {
+
+        $scope.genelAyarlariYukle = function()
+        {
+            $scope.loading = true;
+            $http
+                .rest("get")
+                .withPath("Personal/GetPersonal")
+                .sendControl(function(r)
+                {
+                    $scope.loading = false;
+                    if(!r.Error)
+                    {
+                        $scope.model = r.Data;
+                    }
+                });
+        }
+        $scope.genelAyarlariGuncelle = function()
+        {
+            $scope.posting = true;
+            $http
+                .rest("post")
+                .withPath("Personal/UpdatePersonal")
+                .withData($scope.model)
+                .sendControl(function(r)
+                {
+                    $scope.posting = false;
+                    if(r.Error)
+                    {
+                        Swal.fire({
+                          icon: "error",
+                          title: "Kayıt İşlemi Başarısız",
+                          text: r.Error,
+                        });
+                    }
+                    else{
+                        Swal.fire({
+                            icon: "success",
+                          title: "Başarıyla Kaydedildi",
+                          text: r.Error,
+                        })
+                    }
+                    $scope.genelAyarlariYukle();
+                });
+        }
+        
+        $scope.genelAyarlariYukle();
+        
+    });
+</script>
+
+<div class="card card-success card-outline mb-4" ng-controller="Genel">
+    <!--begin::Header-->
+    <div class="card-header d-flex justify-content-center"><div class="card-title">Genel Ayarlar</div></div>
+    <!--end::Header-->
+    <!--begin::Body-->
+
+    <div ng-show="loading" class="card-body">
+        <div ng-show="loading" class="text-center"><span spinner></span></div>
+    </div>
+    <div ng-show="!loading" class="card-body">
+        <div class="input-group mb-2">
+            <span class="input-group-text">İsim Soyisim</span>
+            <input ng-model="model.NameSurname" type="text" class="form-control" placeholder="İsim soyisim">
+        </div>
+        <div class="input-group mb-2">
+            <span class="input-group-text"><i class="bi bi-twitter-x"></i></span>
+            <input ng-model="model.LinkX" type="text" class="form-control" placeholder="X Hesabı Linki" >
+        </div>
+        <div class="input-group mb-2">
+            <span class="input-group-text"><i class="bi bi-facebook"></i></span>
+            <input ng-model="model.LinkFaceBook" type="text" class="form-control" placeholder="Facebook Hesabı Linki">
+        </div>
+        <div class="input-group mb-2">
+            <span class="input-group-text"><i class="bi bi-instagram"></i></span>
+            <input ng-model="model.LinkInstagram" type="text" class="form-control" placeholder="Instagram Hesabı Linki">
+        </div>
+        <div class="input-group mb-2">
+            <span class="input-group-text"><i class="bi bi-linkedin"></i></span>
+            <input ng-model="model.LinkLinkedIn" type="text" class="form-control" placeholder="LinkedIn Hesabı Linki">
+        </div>
+        <div class="input-group">
+            <span class="input-group-text">Yeteneklerim</span>
+            <input ng-model="model.Skills" type="text" class="form-control" placeholder="Yeteneklerim">
+        </div>
+        <div class="text-muted  mb-2" style="font-size:small;">
+            * Anasayfa kısmında Ben bir xxx ile başlayan kısım, her bir yeteneğini , ile ayır.
+        </div>
+        <div class="input-group mb-2">
+            <span class="input-group-text">E-Posta</span>
+            <input ng-model="model.Email" type="text" class="form-control" placeholder="E-Mail">
+        </div>
+        <div class="input-group mb-2">
+            <span class="input-group-text">Telefon</span>
+            <input input-mask="'telefon'" ng-model="model.Phone" type="text" class="form-control" placeholder="Telefon">
+        </div>
+        <div class="input-group mb-2">
+            <span class="input-group-text">Adres</span>
+            <textarea class="form-control" ng-model="model.Address"></textarea>
+        </div>
+
+        <div class="input-group" drap-link-to="" file-upload ng-model="model.LinkPicture" base64="true" >
+            <span class="input-group-text fileselectclick">Arkaplan Resmi(Tıkla veya Sürükle)</span>
+            <button class="btn btn-outline-secondary" type="button">
+                <img class="img-thumbnail" ng-src="{{model.LinkPicture}}" />
+
+            </button>
+        </div>
+
+
+
+
+        <div class="input-group">
+            <span class="input-group-text">Açıklama</span>
+            <textarea class="form-control" ng-model="model.Description"></textarea>
+        </div>
+        <div class="text-muted  mb-2" style="font-size:small;">
+            * Footer kısmında yazacak açıklama
+        </div>
+
+    </div>
+    <!--end::Body-->
+    <!--begin::Footer-->
+    <div class="card-footer">
+        <button ng-disabled="loading || posting" class="btn btn-success" ng-click="genelAyarlariGuncelle()">Güncelle</button>
+    </div>
+    <!--end::Footer-->
+</div>

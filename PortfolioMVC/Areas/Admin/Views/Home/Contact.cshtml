@@ -1,0 +1,100 @@
+﻿<script>
+    angApp.controller('Contact', function ($element, $scope, $compile, $http, $window, $sce, $timeout, $templateCache, NgTableParams, $rootScope, $q) {
+
+        $scope.contactSil = function(item){
+            swal
+            .confirm("Emin misiniz?")
+            .then(function(r){
+                $scope.iletisimSil(item);
+            })
+        }
+        $scope.iletisimSil = function(item)
+        {
+            $scope.posting = true;
+            $http
+                .rest("post")
+                .withPath("Contact/DeleteContact")
+                .withQuery({Id: item.Id})
+                .sendControl(function(r)
+                {
+                    $scope.posting = false;
+                    if(!r.Error)
+                    {
+                        swal.success("Silme işlemi başarılı");
+                        $scope.iletisimleriGetir();
+                    }
+                    else{
+                        swal.error("Silme İşlemi başarısız", r.Error);
+                    }
+                });
+        }
+        $scope.iletisimleriGetir = function()
+        {
+            $scope.loading = true;
+            $http
+                .rest("get")
+                .withPath("Contact/GetContacts")
+                .sendControl(function(r)
+                {
+                    $scope.loading = false;
+                    if(!r.Error)
+                    {
+                        $scope.List = r.Data;
+                    }
+                });
+        }
+        $scope.iletisimleriGetir();
+
+    });
+</script>
+
+<div class="card card-success card-outline mb-4" ng-controller="Contact">
+    <!--begin::Header-->
+    <div class="card-header d-flex justify-content-center"><div class="card-title">İletişime Geçenler</div></div>
+    <!--end::Header-->
+    <!--begin::Body-->
+
+    <div ng-show="loading" class="card-body">
+        <div ng-show="loading" class="text-center"><span spinner></span></div>
+    </div>
+    <div class="card-body">
+        <div class="text-center" ng-show="!List.length && !loading">
+            <div class="text-warning"><i class="bi bi bi-exclamation-triangle"></i></div>
+            Henüz iletişim kaydı yok
+        </div>
+        <div class="grid-container">
+            <div class="grid-item " ng-repeat="item in List">
+                <div class="card h-100 ">
+                    <div class="card-header">
+                        <div class="float-end">
+                            <button class="btn btn-danger" ng-click="contactSil(item)" ng-disabled="posting">Sil</button>
+                        </div>
+                        <h5 class="">
+                            {{item.Name}}
+
+                        </h5>
+                        <span class="text-muted" style="font-size:small">{{item.Email}}</span>
+
+                    </div>
+
+                    <div class="card-body " style="text-align:left;">
+                        <h6><b>Konu: </b>{{item.Subject}}</h6>
+                        <p class="card-text">{{item.Message}}</p>
+                    </div>
+                    <div class="card-footer">
+                        {{item.Date | date:'std'}}
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+    </div>
+
+    <!--end::Body-->
+    <!--begin::Footer-->
+
+    <!--end::Footer-->
+</div>
