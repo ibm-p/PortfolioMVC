@@ -1,4 +1,8 @@
-﻿@using System.Text.RegularExpressions
+﻿@{
+    ViewData["Title"] = "İletişim";
+}
+
+@using System.Text.RegularExpressions
 @model Personal
 
 @{
@@ -6,7 +10,10 @@
     string formattedPhone = Regex.Replace(rawPhone, @"(\d{3})(\d{3})(\d{2})(\d{2})", "(0$1) $2 $3 $4");
 }
 <section id="contact" class="contact section" style="margin-top: 82px">
-
+    <h1 class="text-center">
+        İletişim
+    </h1>
+    <hr />
     <div class="container aos-init aos-animate" data-aos="fade-up" data-aos-delay="100">
 
         <div class="row gy-4">

@@ -27,8 +27,15 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSet
 builder.Services.AddScoped<UserService, UserService>();
 builder.Services.AddScoped<ImageService, ImageService>();
 builder.Services.AddScoped<ContactService, ContactService>();
+builder.Services.AddScoped<PortfolioService, PortfolioService>();
+builder.Services.AddScoped<AboutService, AboutService>();
+builder.Services.AddScoped<ServiceService, ServiceService>();
 
-builder.Services.AddControllers().AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null).AddJsonOptions(ops => ops.JsonSerializerOptions.IncludeFields = true);
+builder.Services.AddControllers()
+    .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null)
+    .AddJsonOptions(ops => ops.JsonSerializerOptions.IncludeFields = true)
+    //Cycles hatasýný önlüyoruz
+    .AddJsonOptions(ops => ops.JsonSerializerOptions.ReferenceHandler =  System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
 
 builder.Services.AddScoped<PersonalService, PersonalService>();
 builder.Services.AddAuthentication(options =>

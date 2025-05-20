@@ -9,7 +9,7 @@ using PortfolioMVC.Data.Utils;
 
 namespace PortfolioMVC.Data
 {
-    //Add-Migration InitialCreate3 -Project PortfolioMVC.Data -StartupProject PortfolioMVC
+    //Add-Migration InitialCreate11 -Project PortfolioMVC.Data -StartupProject PortfolioMVC
     //Update-Database -Project PortfolioMVC.Data -StartupProject PortfolioMVC komutu ile tablo güncellemesi yaptırılır.
     public class PDbContext : DbContext
     {
@@ -35,9 +35,20 @@ namespace PortfolioMVC.Data
                     NameSurname = "Portfolio",
                 }
             );
+            modelBuilder.Entity<About>().HasData(
+                new About
+                {
+                    Id = 1,
+                }
+            );
         }
         public DbSet<Personal> Personel { get; set; }
         public DbSet<User> User { get; set; }
         public DbSet<Contact> Contact { get; set; }
+        public DbSet<Category> Category { get; set; }
+        public DbSet<Portfolio> Portfolio { get; set; }
+        public DbSet<Reference> Reference { get; set; }
+        public DbSet<About> About { get; set; }
+        public DbSet<Service> Service { get; set; }
     }
 }

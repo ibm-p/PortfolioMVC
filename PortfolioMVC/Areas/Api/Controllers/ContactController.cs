@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using PortfolioMVC.Data.Business;
 using PortfolioMVC.Data.Entity;
 using PortfolioMVC.Models;
@@ -24,6 +25,7 @@ namespace PortfolioMVC.Areas.Api.Controllers
                 Success = true,
             };
         }
+        [HttpPost]
         public ApiResult DeleteContact(int id)
         {
             _contactService.Remove<Contact>(id);

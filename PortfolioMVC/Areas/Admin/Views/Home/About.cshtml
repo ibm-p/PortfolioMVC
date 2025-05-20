@@ -1,6 +1,151 @@
-﻿<script>
+﻿@{
+    ViewData["Title"] = "Hakkımda";
+}
+<script>
     angApp.controller('About', function ($element, $scope, $compile, $http, $window, $sce, $timeout, $templateCache, NgTableParams, $rootScope, $q) {
+        $scope.aboutYukle = function()
+        {
+            $scope.loading = true;
+            $http
+                .rest("get")
+                .withPath("About/GetAbout")
+                .sendControl(function(r)
+                {
+                    $scope.loading = false;
+                    if(!r.Error)
+                    {
+                        $scope.model = r.Data;
+                    }
+                });
+        }
+        $scope.aboutGuncelle = function()
+        {
+            $scope.posting = true;
+            $http
+                .rest("post")
+                .withPath("About/UpdateAbout")
+                .withData($scope.model)
+                .sendControl(function(r)
+                {
+                    $scope.posting = false;
+                    if(r.Error)
+                    {
+                        Swal.fire({
+                          icon: "error",
+                          title: "Kayıt İşlemi Başarısız",
+                          text: r.Error,
+                        });
+                    }
+                    else{
+                        Swal.fire({
+                            icon: "success",
+                          title: "Başarıyla Kaydedildi",
+                          text: r.Error,
+                        })
+                    }
+                    $scope.aboutYukle();
+                });
+        }
 
+        $scope.aboutYukle();
+
+
+             $scope.kategorySil = function(item){
+            swal
+            .confirm("Emin misiniz?")
+            .then(function(r){
+                if(r)
+                {
+                    $scope.kategorySilApi(item);
+                }
+            })
+        }
+
+        $scope.referenceSil = function(item){
+            swal
+            .confirm("Emin misiniz?")
+            .then(function(r){
+                if(r)
+                {
+                    $scope.referenceSilApi(item);
+                }
+            })
+        }
+        $scope.referenceSilApi = function(item)
+        {
+            $scope.posting = true;
+            $http
+                .rest("post")
+                .withPath("About/DeleteReference")
+                .withQuery({Id: item.Id})
+                .sendControl(function(r)
+                {
+                    $scope.posting = false;
+                    if(!r.Error)
+                    {
+                        swal.success("Silme işlemi başarılı");
+                        $scope.referanslariGetir();
+                    }
+                    else{
+                        swal.error("Silme İşlemi başarısız", r.Error);
+                    }
+                });
+        }
+
+
+        $scope.referanslariGetir = function(){
+            $scope.loading = true;
+            $http
+                .rest("get")
+                .withPath("About/GetReferences")
+                .sendControl(function(r)
+                {
+                    $scope.loading = false;
+                    if(!r.Error)
+                    {
+                        $scope.References = r.Data;
+                    }
+                });
+        }
+
+        $scope.referenceEkleDuzenle = function(item)
+        {
+            if(!item)
+            {
+                $scope.selectedReference = {
+                    Id: 0,
+                    ImageLink: "images/default.jpg"
+                };
+            }
+            else{
+                $scope.selectedReference = item.Copy();
+            }
+            $("#referenceModal").modal("show");
+        }
+        $scope.referanslariGetir();
+
+        $scope.referenceKaydet = function()
+        {
+            $scope.posting = true;
+            $http
+                .rest("post")
+                .withPath("About/AddOrUpdateReference")
+                .withData($scope.selectedReference)
+                .sendControl(function(r)
+                {
+                    $scope.posting = false;
+                    if(!r.Error)
+                    {
+                        swal.success("Güncelleme işlemi başarılı");
+                        $scope.referanslariGetir();
+                        $("#referenceModal").modal("hide");
+
+                    }
+                    else{
+                        swal.error("Güncelleme İşlemi başarısız", r.Error);
+                    }
+                });
+        }
 
         
     });
@@ -17,69 +162,134 @@
     </div>
     <div ng-show="!loading" class="card-body">
         <div class="input-group mb-2">
-            <span class="input-group-text">İsim Soyisim</span>
-            <input ng-model="model.NameSurname" type="text" class="form-control" placeholder="İsim soyisim">
+            <span class="input-group-text">Başlık</span>
+            <input ng-model="model.Title" type="text" class="form-control" placeholder="Başlık">
         </div>
         <div class="input-group mb-2">
-            <span class="input-group-text"><i class="bi bi-twitter-x"></i></span>
-            <input ng-model="model.LinkX" type="text" class="form-control" placeholder="X Hesabı Linki" >
+            <span class="input-group-text">WebSite</span>
+            <input ng-model="model.WebSite" type="text" class="form-control" placeholder="WebSite">
         </div>
         <div class="input-group mb-2">
-            <span class="input-group-text"><i class="bi bi-facebook"></i></span>
-            <input ng-model="model.LinkFaceBook" type="text" class="form-control" placeholder="Facebook Hesabı Linki">
+            <span class="input-group-text">Yaş</span>
+            <input ng-model="model.Age" type="text" class="form-control" placeholder="Yaş">
         </div>
         <div class="input-group mb-2">
-            <span class="input-group-text"><i class="bi bi-instagram"></i></span>
-            <input ng-model="model.LinkInstagram" type="text" class="form-control" placeholder="Instagram Hesabı Linki">
+            <span class="input-group-text">Şehir</span>
+            <input ng-model="model.City" type="text" class="form-control" placeholder="Şehir">
         </div>
-        <div class="input-group mb-2">
-            <span class="input-group-text"><i class="bi bi-linkedin"></i></span>
-            <input ng-model="model.LinkLinkedIn" type="text" class="form-control" placeholder="LinkedIn Hesabı Linki">
-        </div>
-        <div class="input-group">
-            <span class="input-group-text">Yeteneklerim</span>
-            <input ng-model="model.Skills" type="text" class="form-control" placeholder="Yeteneklerim">
-        </div>
-        <div class="text-muted  mb-2" style="font-size:small;">
-            * Anasayfa kısmında Ben bir xxx ile başlayan kısım, her bir yeteneğini , ile ayır.
-        </div>
-        <div class="input-group mb-2">
-            <span class="input-group-text">E-Posta</span>
-            <input ng-model="model.Email" type="text" class="form-control" placeholder="E-Mail">
-        </div>
-        <div class="input-group mb-2">
-            <span class="input-group-text">Telefon</span>
-            <input input-mask="'telefon'" ng-model="model.Phone" type="text" class="form-control" placeholder="Telefon">
-        </div>
-        <div class="input-group mb-2">
-            <span class="input-group-text">Adres</span>
-            <textarea class="form-control" ng-model="model.Address"></textarea>
-        </div>
-
-        <div class="input-group" drap-link-to="" file-upload ng-model="model.LinkPicture" base64="true" >
-            <span class="input-group-text fileselectclick">Arkaplan Resmi(Tıkla veya Sürükle)</span>
+        <div class="input-group" drap-link-to="" file-upload ng-model="model.LinkPicture" base64="true">
+            <span class="input-group-text fileselectclick">Resmim(Tıkla veya Sürükle)</span>
             <button class="btn btn-outline-secondary" type="button">
                 <img class="img-thumbnail" ng-src="{{model.LinkPicture}}" />
 
             </button>
         </div>
 
-
-
-
         <div class="input-group">
             <span class="input-group-text">Açıklama</span>
-            <textarea class="form-control" ng-model="model.Description"></textarea>
+            <textarea class="form-control" ng-model="model.Description" placeholder="Açıklama"></textarea>
         </div>
         <div class="text-muted  mb-2" style="font-size:small;">
-            * Footer kısmında yazacak açıklama
+            * Hakkımdaki açıklama(Html kullanılabilir)
         </div>
 
     </div>
     <!--end::Body-->
     <!--begin::Footer-->
     <div class="card-footer">
-        <button ng-disabled="loading || posting" class="btn btn-success" ng-click="genelAyarlariGuncelle()">Güncelle</button>
+        <button ng-disabled="loading || posting" class="btn btn-success" ng-click="aboutGuncelle()">Güncelle</button>
     </div>
     <!--end::Footer-->
+    <!--begin::Header-->
+    <div class="card-header d-flex justify-content-center"><div class="card-title">Referanslarım</div></div>
+    <!--end::Header-->
+    <!--begin::Body-->
+
+    <div ng-show="!loading" class="card-body">
+        <div class="">
+            <button class="btn btn-danger btn-sm" ng-click="referenceEkleDuzenle()">Yeni Ekle</button>
+        </div>
+        <div class="grid-container">
+            <div class="grid-item " ng-repeat="item in References">
+                <div class="card h-100 ">
+                    <div class="card-header">
+                        <div class="float-end">
+                            <button class="btn btn-sm btn-default me-1" ng-click="referenceEkleDuzenle(item)">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" ng-click="referenceSil(item)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                        <h5 class="">
+                            {{item.Name}}<br>
+                            <span class="text-muted" style="font-size: small;">
+                                {{item.Title}}
+
+                            </span>
+
+                        </h5>
+
+                        <span class="badge text-bg-success">{{item.Category.Name}}</span>
+
+                    </div>
+
+                    <div class="card-body " style="text-align:left;">
+                        <img class="img-thumbnail" ng-src="{{item.LinkPicture}}" />
+                        <p class="card-text">{{item.Description}}</p>
+
+                    </div>
+                    <div class="card-footer">
+                        {{item.Date | date:'std'}}
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+    <div id="referenceModal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Referans <span ng-show="selectedReference.Id">Düzenle</span><span ng-show="!selectedReference.Id">Ekle</span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">İsim</span>
+                        <input class="form-control" type="text" ng-model="selectedReference.Name" />
+                    </div>
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">Ünvan</span>
+                        <input class="form-control" type="text" ng-model="selectedReference.Title" />
+                    </div>
+
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">Açıklama</span>
+                        <textarea class="form-control" type="text" ng-model="selectedReference.Description"></textarea>
+                    </div>
+
+                    <div class="input-group" drap-link-to="" file-upload ng-model="selectedReference.LinkPicture" base64="true">
+                        <span class="input-group-text fileselectclick">Resmi(Tıkla veya Sürükle)</span>
+                        <button class="btn btn-outline-secondary" type="button">
+                            <img class="img-thumbnail" ng-src="{{selectedReference.LinkPicture}}" />
+
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" ng-click="referenceKaydet()">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+
+

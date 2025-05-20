@@ -1,0 +1,35 @@
+﻿@model List<Service>
+@{
+    ViewData["Title"] = "Hizmetlerim";
+}
+
+<section id="services" class="services section mb-5" style="margin-top: 82px">
+    <h1 class="text-center">
+        Hizmetlerim
+    </h1>
+    <hr />
+    <div class="container">
+
+        <div class="row gy-4">
+
+            @foreach(var item in Model)
+            {
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="service-item  position-relative">
+                        <div class="icon">
+                            <i class="@item.IconClass"></i>
+                        </div>
+                        <h3>@item.Name</h3>
+
+                        <p>@item.Description</p>
+                    </div>
+                </div>
+            }
+
+
+
+        </div>
+
+    </div>
+
+</section><!-- /Services Section -->

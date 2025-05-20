@@ -26,8 +26,9 @@ namespace PortfolioMVC.Services
         }
         public void DeleteImage(string fname)
         {
-           if(File.Exists(fname))
-                File.Delete(fname);
+            string path = Path.Combine(_env.WebRootPath, fname);
+            if (File.Exists(path))
+                File.Delete(path);
         }
     }
 

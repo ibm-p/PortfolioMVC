@@ -23,6 +23,14 @@ namespace PortfolioMVC.Areas.Admin.Controllers
         {
             return View();
         }
+        public IActionResult Portfolio()
+        {
+            return View();
+        }
+        public IActionResult Service()
+        {
+            return View();
+        }
         [HttpGet]
         public IActionResult Logout()
         {

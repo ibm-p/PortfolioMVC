@@ -1036,16 +1036,18 @@ angApp.directive('templateTarget', function ($compile) {
 
 angApp.directive("fileUpload", function ($compile) {
 	let msgElement = $("<div />").html("Dosyaları sürükleyebilir veya tıklayarak seçebilirsiniz.");
-	let inputElement = $("<input type='file' input-file />").css("display", "none");
     return {
 		restrict: 'A',
 		require: '?ngModel',
 		compile: function(element, attributes, ngModelCtrl){
+				let inputElement = $("<input type='file' input-file />").css("display", "none");
+
 			if($(element).is("[multiple]"))
 			{
 				inputElement.attr("multiple", "multiple");
 			}
 			if(attributes.ngModel){
+
 				inputElement.attr("ng-model", attributes.ngModel);
 			}
 			if(attributes.ngChange){
@@ -1061,6 +1063,7 @@ angApp.directive("fileUpload", function ($compile) {
 				//.empty()
 				//.append(msgElement)
 				.append(inputElement);
+			
 			$(element).addClass("upload-area ");
 
 			return function(scope){
@@ -1122,7 +1125,7 @@ angApp.directive("inputFile", [function () {
 						}
 						else
 						{
-
+						
 							ngModelCtrl.$setViewValue(changeEvent.target.files[0].ImageData)
 						}
 					}

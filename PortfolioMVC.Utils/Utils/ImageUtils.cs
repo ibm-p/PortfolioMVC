@@ -27,7 +27,7 @@ namespace PortfolioMVC.Utils.Utils
                     Directory.CreateDirectory(_folderPath);
                 string filePath = Path.Combine(_folderPath, name);
                 System.IO.File.WriteAllBytes(filePath, imageBytes);
-                return "/images" + name;
+                return "/images/" + name;
             }
             catch (Exception)
             {

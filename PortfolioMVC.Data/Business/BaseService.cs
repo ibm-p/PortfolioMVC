@@ -25,9 +25,7 @@ namespace PortfolioMVC.Data.Business
         public void Remove<T>(T entity) where T : class
         {
             var entry = this.Context.Entry(entity);
-            if (this.Context.Entry(entity).State == EntityState.Modified)
-                return;
-            this.Context.Set<T>().Update(entity);
+            this.Context.Set<T>().Remove(entity);
         }
         public int SaveChanges() => Context.SaveChanges();
         public virtual void Attact<TEntity>(TEntity entity) where TEntity : class

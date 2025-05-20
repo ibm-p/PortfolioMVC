@@ -15,14 +15,20 @@ namespace PortfolioMVC.Controllers
         private readonly ILogger<HomeController> _logger;
         PersonalService _personalService;
         ContactService _contactService;
+        PortfolioService _portfolioService;
+        ServiceService _serviceService;
+        AboutService _aboutService;
 
 
 
-        public HomeController(ILogger<HomeController> logger, PDbContext context, PersonalService personalService, ContactService contactService)
+        public HomeController(ILogger<HomeController> logger, PDbContext context, PersonalService personalService, ContactService contactService, PortfolioService portfolioService, ServiceService serviceService, AboutService aboutService)
         {
             _logger = logger;
             _personalService = personalService;
             _contactService = contactService;
+            _portfolioService = portfolioService;
+            _aboutService = aboutService;
+            _serviceService = serviceService;
         }
 
         public IActionResult Index()
@@ -32,16 +38,37 @@ namespace PortfolioMVC.Controllers
         }
         public IActionResult About()
         {
-            return View();
+            AboutModel model = new AboutModel();
+            model.About = _aboutService.GetAbout()!;
+            model.References = _aboutService.GetReferences().ToList();
+            model.Personal = _personalService.GetPersonal()!;
+            return View(model);
         }
         public IActionResult Privacy()
         {
             return View();
         }
-
+        public IActionResult Portfolio()
+        {
+            var cats = _portfolioService.GetCategories().ToList();
+            var ports  = _portfolioService.GetAll().ToList();
+            var model = new PortfolioModel()
+            {
+                Categories = cats,
+                Portfolios = ports
+            };
+            return View(model);
+        }
         public IActionResult Contact() {
             var model = _personalService.GetPersonal();
             return View(model);
+        }
+
+
+        public IActionResult Services()
+        {
+            List<Service> services = _serviceService.GetAll().ToList();
+            return View(services);
         }
         [HttpPost]
         public IActionResult ContactForm(Contact model)

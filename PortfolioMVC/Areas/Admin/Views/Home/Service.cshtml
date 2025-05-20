@@ -1,0 +1,180 @@
+﻿@{
+    ViewData["Title"] = "Hizmetlerim";
+}
+
+<script>
+    angApp.controller('About', function ($element, $scope, $compile, $http, $window, $sce, $timeout, $templateCache, NgTableParams, $rootScope, $q) {
+        $scope.serviceSil = function(item){
+            swal
+            .confirm("Emin misiniz?")
+            .then(function(r){
+                if(r)
+                {
+                    $scope.serviceSilApi(item);
+                }
+            })
+        }
+        $scope.serviceSilApi = function(item)
+        {
+            $scope.posting = true;
+            $http
+                .rest("post")
+                .withPath("Service/DeleteService")
+                .withQuery({Id: item.Id})
+                .sendControl(function(r)
+                {
+                    $scope.posting = false;
+                    if(!r.Error)
+                    {
+                        swal.success("Silme işlemi başarılı");
+                        $scope.servisleriGetir();
+                    }
+                    else{
+                        swal.error("Silme İşlemi başarısız", r.Error);
+                    }
+                });
+        }
+
+
+        $scope.servisleriGetir = function(){
+            $scope.loading = true;
+            $http
+                .rest("get")
+                .withPath("Service/GetAll")
+                .sendControl(function(r)
+                {
+                    $scope.loading = false;
+                    if(!r.Error)
+                    {
+                        $scope.Services = r.Data;
+                    }
+                });
+        }
+
+        $scope.serviceEkleDuzenle = function(item)
+        {
+            if(!item)
+            {
+                $scope.selectedService = {
+                    Id: 0,
+                };
+            }
+            else{
+                $scope.selectedService = item.Copy();
+            }
+            $("#serviceModal").modal("show");
+        }
+        $scope.servisleriGetir();
+
+        $scope.serviceKaydet = function()
+        {
+            $scope.posting = true;
+            $http
+                .rest("post")
+                .withPath("Service/AddOrUpdate")
+                .withData($scope.selectedService)
+                .sendControl(function(r)
+                {
+                    $scope.posting = false;
+                    if(!r.Error)
+                    {
+                        swal.success("Güncelleme işlemi başarılı");
+                        $scope.servisleriGetir();
+                        $("#serviceModal").modal("hide");
+
+                    }
+                    else{
+                        swal.error("Güncelleme İşlemi başarısız", r.Error);
+                    }
+                });
+        }
+
+
+    });
+</script>
+
+
+<div class="card card-success card-outline mb-4" ng-controller="About">
+    <!--begin::Header-->
+    <div class="card-header d-flex justify-content-center"><div class="card-title">Hizmetlerim</div></div>
+    <!--end::Header-->
+    <!--begin::Body-->
+
+    <div ng-show="!loading" class="card-body">
+        <div class="">
+            <button class="btn btn-danger btn-sm" ng-click="serviceEkleDuzenle()">Yeni Ekle</button>
+        </div>
+        <div class="grid-container">
+            <div class="grid-item " ng-repeat="item in Services">
+                <div class="card h-100 ">
+                    <div class="card-header">
+                        <div class="float-end">
+                            <button class="btn btn-sm btn-default me-1" ng-click="serviceEkleDuzenle(item)">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" ng-click="serviceSil(item)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                        <h5 class="">
+                            {{item.Name}}<br>
+                            <span class="text-muted" style="font-size: small;">
+                                {{item.IconClass}}
+
+                            </span>
+
+                        </h5>
+
+                        <span class="badge text-bg-success">{{item.Category.Name}}</span>
+
+                    </div>
+
+                    <div class="card-body " style="text-align:left;">
+                        <p class="card-text">{{item.Description}}</p>
+
+                    </div>
+                    <div class="card-footer">
+                        {{item.Date | date:'std'}}
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+    <div id="serviceModal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Hizmet <span ng-show="selectedService.Id">Düzenle</span><span ng-show="!selectedService.Id">Ekle</span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">İsim</span>
+                        <input class="form-control" type="text" ng-model="selectedService.Name" />
+                    </div>
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">İkon Sınıfı(Bootstrap)</span>
+                        <input class="form-control" type="text" ng-model="selectedService.IconClass" />
+                    </div>
+
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">Açıklama</span>
+                        <textarea class="form-control" type="text" ng-model="selectedService.Description"></textarea>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" ng-click="serviceKaydet()">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--end::Body-->
+</div>

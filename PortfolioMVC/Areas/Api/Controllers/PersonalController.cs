@@ -49,7 +49,7 @@ namespace PortfolioMVC.Areas.Api.Controllers
             {
                 if (string.IsNullOrEmpty(older?.LinkPicture) == false)
                 {
-                    _imageService.DeleteImage(personal.LinkPicture!);
+                    _imageService.DeleteImage(older.LinkPicture!);
                 }
                 personal.LinkPicture = fp;
 

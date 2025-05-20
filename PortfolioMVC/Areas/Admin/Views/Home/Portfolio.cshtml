@@ -1,0 +1,366 @@
+﻿@{
+    ViewData["Title"] = "Portföyüm";
+}
+<script>
+    angApp.controller('Portfolio', function ($element, $scope, $compile, $http, $window, $sce, $timeout, $templateCache, NgTableParams, $rootScope, $q) {
+
+        $scope.kategorySil = function(item){
+            swal
+            .confirm("Emin misiniz?")
+            .then(function(r){
+                if(r)
+                {
+                    $scope.kategorySilApi(item);
+                }
+            })
+        }
+        $scope.kategorySilApi = function(item)
+        {
+            $scope.posting = true;
+            $http
+                .rest("post")
+                .withPath("Portfolio/DeleteCategory")
+                .withQuery({Id: item.Id})
+                .sendControl(function(r)
+                {
+                    $scope.posting = false;
+                    if(!r.Error)
+                    {
+                        swal.success("Silme işlemi başarılı");
+                        $scope.kategorileriGetir();
+                    }
+                    else{
+                        swal.error("Silme İşlemi başarısız", r.Error);
+                    }
+                });
+        }
+
+        $scope.portfolioSil = function(item){
+            swal
+            .confirm("Emin misiniz?")
+            .then(function(r){
+                if(r)
+                {
+                    $scope.portfolioSilApi(item);
+                }
+            })
+        }
+        $scope.portfolioSilApi = function(item)
+        {
+            $scope.posting = true;
+            $http
+                .rest("post")
+                .withPath("Portfolio/DeletePortfolio")
+                .withQuery({Id: item.Id})
+                .sendControl(function(r)
+                {
+                    $scope.posting = false;
+                    if(!r.Error)
+                    {
+                        swal.success("Silme işlemi başarılı");
+                        $scope.portfoyleriGetir();
+                    }
+                    else{
+                        swal.error("Silme İşlemi başarısız", r.Error);
+                    }
+                });
+        }
+
+        $scope.kategorileriGetir = function()
+        {
+            $http
+                .rest("get")
+                .withPath("Portfolio/GetCategories")
+                .sendControl(function(r)
+                {
+                    if(!r.Error)
+                    {
+                        $scope.Categories = r.Data;
+                    }
+                });
+        }
+        $scope.portfoyleriGetir = function(){
+            $scope.loading = true;
+            $http
+                .rest("get")
+                .withPath("Portfolio/GetAll")
+                .sendControl(function(r)
+                {
+                    $scope.loading = false;
+                    if(!r.Error)
+                    {
+                        $scope.Portfolios = r.Data;
+                    }
+                });
+        }
+        $scope.kategoriEkleDuzenle = function(item)
+        {
+            if(!item)
+            {
+                $scope.selectedCategory = {
+                    Id: 0
+                };
+            }
+            else{
+                $scope.selectedCategory = item.Copy();
+            }
+            $("#categoryModal").modal("show");
+        }
+        $scope.portfolioEkleDuzenle = function(item)
+        {
+            if(!item)
+            {
+                $scope.selectedPortfolio = {
+                    Id: 0,
+                    ImageLink: "images/default.jpg"
+                };
+            }
+            else{
+                $scope.selectedPortfolio = item.Copy();
+            }
+            $("#portfolioModal").modal("show");
+        }
+        $scope.kategorileriGetir();
+        $scope.portfoyleriGetir();
+
+        $scope.kategoriKaydet = function()
+        {
+            $scope.posting = true;
+            $http
+                .rest("post")
+                .withPath("Portfolio/AddOrUpdateCategory")
+                .withData($scope.selectedCategory)
+                .sendControl(function(r)
+                {
+                    $scope.posting = false;
+                    if(!r.Error)
+                    {
+                        swal.success("Güncelleme işlemi başarılı");
+                        $scope.kategorileriGetir();
+                        $("#categoryModal").modal("hide");
+
+                    }
+                    else{
+                        swal.error("Güncelleme İşlemi başarısız", r.Error);
+                    }
+                });
+        }
+        $scope.portfolioKaydet = function()
+        {
+            $scope.posting = true;
+            $http
+                .rest("post")
+                .withPath("Portfolio/AddOrUpdatePortfolio")
+                .withData($scope.selectedPortfolio)
+                .sendControl(function(r)
+                {
+                    $scope.posting = false;
+                    if(!r.Error)
+                    {
+                        swal.success("Güncelleme işlemi başarılı");
+                        $scope.portfoyleriGetir();
+                        $("#portfolioModal").modal("hide");
+
+                    }
+                    else{
+                        swal.error("Güncelleme İşlemi başarısız", r.Error);
+                    }
+                });
+        }
+
+
+
+    });
+</script>
+<style>
+    .grid-item img{
+        max-height: 300px;
+    }
+</style>
+
+<div class="card card-success card-outline mb-4" ng-controller="Portfolio">
+    <!--begin::Header-->
+    <div class="card-header d-flex justify-content-center"><div class="card-title">Portföyüm</div></div>
+    <!--end::Header-->
+    <!--begin::Body-->
+
+    <div ng-show="loading" class="card-body">
+        <div ng-show="loading" class="text-center"><span spinner></span></div>
+    </div>
+    <div class="card-body">
+        <ul class="nav nav-tabs m-0" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#portfolio" type="button" role="tab" aria-controls="home" aria-selected="true">Portföyler</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#categories" type="button" role="tab" aria-controls="profile" aria-selected="false">Kategoriler</button>
+            </li>
+        </ul>
+
+        <div class="tab-content mt-3" id="">
+            <div class="tab-pane fade show active" id="portfolio" role="tabpanel" aria-labelledby="home-tab">
+                <div class="">
+                    <button class="btn btn-danger btn-sm" ng-click="portfolioEkleDuzenle()">Yeni Ekle</button>
+                </div>
+                <div class="grid-container">
+                    <div class="grid-item " ng-repeat="item in Portfolios">
+                        <div class="card h-100 ">
+                            <div class="card-header">
+                                <div class="float-end">
+                                    <button class="btn btn-sm btn-default me-1" ng-click="portfolioEkleDuzenle(item)">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" ng-click="portfolioSil(item)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                                <h5 class="">
+                                    {{item.Name}}
+
+                                </h5>
+                                <span class="badge text-bg-success">{{item.Category.Name}}</span>            
+
+                            </div>
+
+                            <div class="card-body " style="text-align:left;">
+                                <img class="img-thumbnail" ng-src="{{item.ImageLink}}" />
+                                <p class="card-text">{{item.Description}}</p>
+
+                            </div>
+                            <div class="card-footer">
+                                {{item.Date | date:'std'}}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="categories" role="tabpanel" aria-labelledby="profile-tab">
+                <div class="">
+                    <button class="btn btn-danger btn-sm" ng-click="kategoriEkleDuzenle()">Yeni Ekle</button>
+                </div>
+                <table class="table table-bordered mt-2">
+                    <thead>
+                        <tr>
+                            <th>
+                                #
+                            </th>
+                            <th>
+                                Ad
+                            </th>
+                            <th>
+                                Sınıf
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="item in Categories">
+
+                            <td>
+                                {{item.Id}}
+                            </td>
+                            <td>
+                                {{item.Name}}
+                            </td>
+                            <td>
+                                {{item.Classname}}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-default me-1" ng-click="kategoriEkleDuzenle(item)">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" ng-click="kategorySil(item)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+
+        </div>
+       
+    </div>
+
+    <!--end::Body-->
+    <div id="categoryModal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Kategori <span ng-show="selectedCategory.Id">Düzenle</span><span ng-show="!selectedCategory.Id">Ekle</span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                   <div class="input-group mb-2">
+                       <span class="input-group-text">İsim</span>
+                        <input class="form-control" type="text" ng-model="selectedCategory.Name" />
+                   </div>
+                    <div class="input-group">
+                        <span class="input-group-text">Sınıf İsmi</span>
+                        <input class="form-control" type="text" ng-model="selectedCategory.Classname" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" ng-click="kategoriKaydet()">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="portfolioModal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Portföy <span ng-show="selectedPortfolio.Id">Düzenle</span><span ng-show="!selectedPortfolio.Id">Ekle</span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">İsim</span>
+                        <input class="form-control" type="text" ng-model="selectedPortfolio.Name" />
+                    </div>
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">Kategori</span>
+                        <select class="form-control" ng-options="item.Id as item.Name for item in Categories " ng-model="selectedPortfolio.CategoryId"></select>
+                    </div>
+
+
+
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">Açıklama</span>
+                        <textarea class="form-control" type="text" ng-model="selectedPortfolio.Description"></textarea>
+                    </div>
+
+                    <div class="input-group" drap-link-to="" file-upload ng-model="selectedPortfolio.ImageLink" base64="true">
+                        <span class="input-group-text fileselectclick">Resmi(Tıkla veya Sürükle)</span>
+                        <button class="btn btn-outline-secondary" type="button">
+                            <img class="img-thumbnail" ng-src="{{selectedPortfolio.ImageLink}}" />
+
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" ng-click="portfolioKaydet()">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+
+
+
+
+
+
