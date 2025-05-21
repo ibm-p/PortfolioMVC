@@ -16,8 +16,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews()
        .AddRazorRuntimeCompilation();
 
+
+var connectionString = builder.Configuration.GetConnectionString("EFConnection");
+
 builder.Services.AddDbContext<PDbContext>(options =>
-    options.UseSqlServer("Server=.\\SQLEXPRESS;Database=PortfolioMVCDB;Trusted_Connection=True;TrustServerCertificate=True;"));
+    options.UseSqlServer(connectionString));
 
 // Add services to the container.
 
